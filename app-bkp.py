@@ -54,15 +54,9 @@ def initialize_system():
         st.session_state.retriever = HybridRetriever(st.session_state.embedding_manager, SEARCH_DIR)
     if "conversation" not in st.session_state:
         st.session_state.conversation = []  # Stores full chat history
-    
-    # Ensure model loads before chat starts
     if 'llm_handler' not in st.session_state or st.session_state.llm_handler is None:
-        with st.spinner("⏳ Loading language model... This may take a few minutes. Please wait."):
-            st.session_state.llm_handler = LlmHandler(HUGGINGFACE_TOKEN, MAX_NEW_TOKENS)
-
-    # Display confirmation message once the model is ready
-    st.session_state.model_ready = True
-    st.success("Language model loaded successfully!")
+        with st.spinner("Loading language model... This may take a few minutes"):
+            st.session_state.llm_handler = LlmHandler(HUGGINGFACE_TOKEN,MAX_NEW_TOKENS)
 
 def process_document(file):
     """Process uploaded document and build vector index."""
