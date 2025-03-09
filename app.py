@@ -58,7 +58,7 @@ def initialize_system():
     # Ensure model loads before chat starts
     if 'llm_handler' not in st.session_state or st.session_state.llm_handler is None:
         with st.spinner("⏳ Loading language model... This may take a few minutes. Please wait."):
-            st.session_state.llm_handler = LlmHandler(HUGGINGFACE_TOKEN, MAX_NEW_TOKENS)
+            st.session_state.llm_handler = LlmHandler(MAX_NEW_TOKENS)
 
     # Display confirmation message once the model is ready
     st.session_state.model_ready = True

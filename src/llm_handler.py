@@ -20,8 +20,9 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from huggingface_hub import login
 
 class LlmHandler:
-    def __init__(self, HUGGINGFACE_TOKEN, MAX_NEW_TOKENS, model_name: str = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"):
-        login(token=HUGGINGFACE_TOKEN)
+    def __init__(self, MAX_NEW_TOKENS, model_name: str = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"):
+        huggingface_token = st.secrets["HUGGINGFACE_TOKEN"] 
+        login(token=huggingface_token)
         self.MAX_NEW_TOKENS = MAX_NEW_TOKENS
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
 

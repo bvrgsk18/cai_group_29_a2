@@ -12,7 +12,7 @@ CHUNK_OVERLAP = 25
 #SBERT_MODEL = "all-mpnet-base-v2"
 SBERT_MODEL = "BAAI/bge-large-en-v1.5"
 TOP_K = 5
-HUGGINGFACE_TOKEN="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"
+
 # Create cache directory if it doesn't exist
 os.makedirs(CACHE_DIR, exist_ok=True)
 os.makedirs(SEARCH_DIR, exist_ok=True)
