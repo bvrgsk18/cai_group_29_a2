@@ -32,8 +32,8 @@ class LlmHandler:
         self.model = AutoModelForCausalLM.from_pretrained(
             model_name,
             torch_dtype=torch.float16 if device == "cuda" else torch.float32,  # Use FP16 for GPU, FP32 for CPU
-            device_map="auto" if device == "cuda" else None  # Auto device if GPU, otherwise default to CPU
-            load_in_4bit=True if device == "cuda" else False  # 4-bit only for GPU
+            device_map="auto"# if device == "cuda" else None  # Auto device if GPU, otherwise default to CPU
+            load_in_4bit=True #if device == "cuda" else False  # 4-bit only for GPU
             low_cpu_mem_usage=True  # Optimize memory
         ).to(device)  # Explicitly move model to device
 
