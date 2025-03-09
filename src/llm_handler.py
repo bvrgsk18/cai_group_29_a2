@@ -23,19 +23,23 @@ class LlmHandler:
     def __init__(self, MAX_NEW_TOKENS, model_name: str = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"):
         huggingface_token = st.secrets["HUGGINGFACE_TOKEN"] 
         login(token=huggingface_token)
-        self.MAX_NEW_TOKENS = MAX_NEW_TOKENS
+import torch
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+class LlmHandler:
+    def __init__(self, model_name="TinyLlama/TinyLlama-1.1B-Chat-v1.0", max_tokens=512):
+        self.MAX_NEW_TOKENS = max_tokens
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
 
-        # Check if GPU is available, otherwise use CPU
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+        # Streamlit Cloud runs on CPU only, so enforce CPU usage
+        device = "cpu"
 
         self.model = AutoModelForCausalLM.from_pretrained(
             model_name,
-            torch_dtype="float32" # if device == "cuda" else torch.float32,  # Use FP16 for GPU, FP32 for CPU
-            device_map="auto" # if device == "cuda" else None  # Auto device if GPU, otherwise default to CPU
-            load_in_4bit=True #if device == "cuda" else False  # 4-bit only for GPU
-            low_cpu_mem_usage=True  # Optimize memory
-        ).to(device)  # Explicitly move model to device
+            torch_dtype=torch.float32,  # Use FP32 for CPU compatibility
+            low_cpu_mem_usage=True  # Optimize memory usage for cloud
+        ).to(device)  # Ensure the model is explicitly moved to CPU
+
 
 
 
