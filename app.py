@@ -111,9 +111,9 @@ def main():
     st.sidebar.markdown(f"""
     | Task               | Details    |
     |--------------------|------------|
-    | Embedding Model   | SBERT ({SBERT_MODEL}) |
+    | Embedding Model   | BAAI ({SBERT_MODEL}) |
     | LLM for Response Generation  | TinyLlama (TinyLlama-1.1B-Chat-v1.0a) |
-    | Chunk Size      | 512 tokens |
+    | Chunk Size      | {CHUNK_SIZE} tokens |
     | Sparse Retrieval | BM25 |
     | Dense Retrieval  | FAISS |
     | Retrieval        | Hybrid Search |
@@ -189,12 +189,12 @@ def main():
             st.session_state.conversation.append({"role": "assistant", "content": final_response})
 
             # Ensure UI updates correctly only AFTER storing messages
-            st.experimental_rerun()
+            st.rerun()
 
     # Reset button (clears chat but keeps document)
     if "processed" in st.session_state and st.button("🔄 Reset Chat"):
         st.session_state.conversation = []
-        st.experimental_rerun()
+        st.rerun()
 
 if __name__ == "__main__":
     main()
