@@ -3,6 +3,7 @@ from src.config import *
 from src.data_processor import FinancialDataProcessor
 from src.embeddings import EmbeddingManager
 from src.guardrails import Guardrails
+from src.llm_handler import LlmHandler
 from retriever import HybridRetriever
 import ollama
 import re
@@ -20,7 +21,7 @@ st.markdown(
         margin: auto;
     }
     .bot-message {
-        background-color: #f0f0f0;
+        background-color: #BAD8B6;
         padding: 10px;
         border-radius: 10px;
         margin: 5px 0;
@@ -28,7 +29,7 @@ st.markdown(
         max-width: 80%;
     }
     .user-message {
-        background-color: #d0e7ff;
+        background-color: #FFA725;
         padding: 10px;
         border-radius: 10px;
         margin: 5px 0;
@@ -53,6 +54,9 @@ def initialize_system():
         st.session_state.retriever = HybridRetriever(st.session_state.embedding_manager, SEARCH_DIR)
     if "conversation" not in st.session_state:
         st.session_state.conversation = []  # Stores full chat history
+    if 'llm_handler' not in st.session_state or st.session_state.llm_handler is None:
+        with st.spinner("Loading language model... This may take a few minutes"):
+            st.session_state.llm_handler = LlmHandler(HUGGINGFACE_TOKEN,MAX_NEW_TOKENS)
 
 def process_document(file):
     """Process uploaded document and build vector index."""
@@ -64,7 +68,7 @@ def process_document(file):
         embeddings = st.session_state.embedding_manager.embed_texts(chunks)
 
         if embeddings is None or len(embeddings) == 0:
-            st.error("⚠️ Embeddings could not be generated. Please check your input text.")
+            st.error(" Embeddings could not be generated. Please check your input text.")
             return
 
         st.session_state.embedding_manager.build_index(embeddings)
@@ -88,12 +92,21 @@ def classify_confidence(score):
 
 def main():
 
+    # Add background color to the main page
+    st.markdown(
+        """
+        <style>
+        .main {
+            background-color: #F8F3D9;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+    st.markdown("<h1 style='text-align: center; color: #881148;'>CAI Group 29 - Assignment 2 - RAG ChatBot</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center;color: #D98324;'>Financial Statement Question Answering System</h1>", unsafe_allow_html=True)
 
-    st.markdown("<h1 style='text-align: center;'>CAI Group 29 - Assignment 2 - RAG ChatBot</h1>", unsafe_allow_html=True)
-    st.markdown("<h1 style='text-align: center;'>Financial Statement Question Answering System</h1>", unsafe_allow_html=True)
-
-    st.write("Upload a financial statement PDF and ask questions about it.")
-    
+     
     ## CAI Group 29 Info
     st.sidebar.title("CAI Group 29 Members")
     table_md = """
@@ -161,7 +174,7 @@ def main():
         if query:
             # Append User's Question to Chat History
             st.session_state.conversation.append({"role": "user", "content": f"{query}"})
-
+            
             # Process Query and Append Answer Before UI Refresh
             is_valid, message = st.session_state.guardrails.validate_input(query)
             answer, confidence_label = "", "🔴 Low Confidence"
@@ -174,18 +187,28 @@ def main():
                     context, score = results[0]  # Score from retrieval
                     confidence_label = classify_confidence(score)
 
-                    prompt = f"""You are a financial analyst. Extract only the numerical values from the provided text. 
-                    If you do not know the answer, respond with "I cannot answer". 
-                    Use the following information:\n\n#####{context}####\n\nQuestion: {query}"""
+                    prompt = f"""You are a financial analyst. Answer the question from given context only. strictly no hallucinated answers.
+                    Do not approximate values. Give extact numbers from context. 
+                    If you do not know the answer, respond with "I'm sorry, but I couldn't find relevant information in the document.". 
+                    Use the following information:
+                    \n
+                    Context: {context}
+                    \n
+                    Question: {query}
+                    \n
+                    Answer: """
 
-                    # Generate Response Using Ollama
-                    response = ollama.chat(model="tinyllama", messages=[{"role": "assistant", "content": prompt}])
-                    answer = response["message"]["content"]
+                    # Generate Response Using LlmHandler
+                    response = st.session_state.llm_handler.generate_response(prompt)
+                    answer = response
                 else:
                     answer = "I'm sorry, but I couldn't find relevant information in the document."
 
             # Append Assistant's Response Before UI Refresh
-            final_response = f"{answer} ({confidence_label})"
+            if answer:
+                final_response = f"{answer} ({confidence_label})"
+            else:
+                final_response = "I'm sorry, but I couldn't find relevant information in the document."
             st.session_state.conversation.append({"role": "assistant", "content": final_response})
 
             # Ensure UI updates correctly only AFTER storing messages

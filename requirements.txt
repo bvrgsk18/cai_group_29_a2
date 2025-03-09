@@ -13,3 +13,4 @@ pytesseract
 nltk
 ollama
 pymupdf
+accelerate>=0.26.0

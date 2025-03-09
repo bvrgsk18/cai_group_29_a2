@@ -6,7 +6,7 @@ class Guardrails:
     def __init__(self):
         self.financial_keywords = {
             'revenue', 'profit', 'loss', 'earnings', 'assets', 'liabilities',
-            'balance', 'cash flow', 'income', 'expenses', 'debt', 'equity','sales','sold','market','capitalisation','dividend'
+            'balance', 'cash flow', 'income', 'expenses', 'debt', 'equity','sales','sold','market','capitalisation','dividend','?'
         }
         
     def validate_input(self, query: str) -> Tuple[bool, str]:
