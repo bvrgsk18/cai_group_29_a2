@@ -4,32 +4,11 @@ import streamlit as st
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from huggingface_hub import login
 
-class LlmHandler:
-    def __init__(self, HUGGINGFACE_TOKEN, MAX_NEW_TOKENS, model_name="TinyLlama/TinyLlama-1.1B-Chat-v1.0"):
-        login(token=HUGGINGFACE_TOKEN)
-        self.MAX_NEW_TOKENS = MAX_NEW_TOKENS
-        self.model_name = model_name
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-        self.model = None  # Initialize model as None
-
-        # Load model synchronously, blocking execution until it's ready
-        self.load_model()
-import os
-import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
-from huggingface_hub import login
 
 class LlmHandler:
     def __init__(self, MAX_NEW_TOKENS, model_name: str = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"):
         huggingface_token = st.secrets["HUGGINGFACE_TOKEN"] 
         login(token=huggingface_token)
-import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
-
-class LlmHandler:
-    def __init__(self, model_name="TinyLlama/TinyLlama-1.1B-Chat-v1.0", max_tokens=512):
-        self.MAX_NEW_TOKENS = max_tokens
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
 
         # Streamlit Cloud runs on CPU only, so enforce CPU usage
         device = "cpu"
@@ -39,8 +18,6 @@ class LlmHandler:
             torch_dtype=torch.float32,  # Use FP32 for CPU compatibility
             low_cpu_mem_usage=True  # Optimize memory usage for cloud
         ).to(device)  # Ensure the model is explicitly moved to CPU
-
-
 
 
     @st.cache_resource
