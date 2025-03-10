@@ -1,4 +1,5 @@
 import streamlit as st
+import asyncio
 from src.config import *
 from src.data_processor import FinancialDataProcessor
 from src.embeddings import EmbeddingManager
@@ -8,10 +9,12 @@ from retriever import HybridRetriever
 import ollama
 import re
 
+
 st.set_page_config(
     page_title="CAI Group 29 - Assignment 2 - RAG Chatbot - Financial Results Q&A",
     layout="wide"
-    )
+)
+
 # Custom CSS for chat styling
 st.markdown(
     """
@@ -44,6 +47,12 @@ st.markdown(
 
 def initialize_system():
     """Initialize system components."""
+    # Fix for asyncio event loop conflict
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:  # If no active loop, create one
+        asyncio.set_event_loop(asyncio.new_event_loop())
+
     if "processor" not in st.session_state:
         st.session_state.processor = FinancialDataProcessor()
     if "embedding_manager" not in st.session_state:
@@ -112,8 +121,7 @@ def main():
     st.markdown("<h1 style='text-align: center; color: #881148;'>CAI Group 29 - Assignment 2 - RAG ChatBot</h1>", unsafe_allow_html=True)
     st.markdown("<h1 style='text-align: center;color: #D98324;'>Financial Statement Question Answering System</h1>", unsafe_allow_html=True)
 
-     
-    ## CAI Group 29 Info
+    # CAI Group 29 Info
     st.sidebar.title("CAI Group 29 Members")
     table_md = """
     | Name               | ID          |
@@ -177,9 +185,13 @@ def main():
         # User query input
         query = st.chat_input("Ask a question about the financial statement...")
 
+
         if query:
             # Append User's Question to Chat History
             st.session_state.conversation.append({"role": "user", "content": f"{query}"})
+            # Display a placeholder response immediately
+            placeholder = st.empty()
+            placeholder.markdown('<div class="bot-message">Processing your request...</div>', unsafe_allow_html=True)
             
             # Process Query and Append Answer Before UI Refresh
             is_valid, message = st.session_state.guardrails.validate_input(query)
